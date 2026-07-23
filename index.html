@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AudioScribe AI - Speech to Text & Transcript Formatter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+            <line x1="8" y1="22" x2="16" y2="22"></line>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">AudioScribe <span class="badge">AI</span></h1>
+          <p class="logo-subtitle">Long Audio Speech-to-Text & Smart Paragraph Formatter</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="engine-select-wrapper">
+          <label for="engineSelect" class="input-label">Transcription Model</label>
+          <select id="engineSelect" class="custom-select">
+            <option value="Xenova/whisper-tiny.en">Local Whisper Tiny (Fastest - Free)</option>
+            <option value="Xenova/whisper-base.en" selected>Local Whisper Base (Recommended - Free)</option>
+            <option value="Xenova/whisper-small.en">Local Whisper Small (High Accuracy - Free)</option>
+            <option value="cloud-api">Cloud Whisper API (Instant for 1-Hour Audio)</option>
+          </select>
+        </div>
+        <button id="apiSettingsBtn" class="btn btn-secondary btn-icon" title="API Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- File Upload & Audio Setup Card -->
+      <section class="card upload-card">
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="audioFileInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.webm,.flac" hidden />
+          <div class="dropzone-content">
+            <div class="upload-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <h3>Drag & Drop your 1-Hour Audio file here</h3>
+            <p>Supports MP3, WAV, M4A, AAC, OGG, WEBM, FLAC (Up to 2+ Hours supported)</p>
+            <button class="btn btn-primary" onclick="document.getElementById('audioFileInput').click()">Browse File</button>
+          </div>
+        </div>
+
+        <!-- Audio Player & Info (Hidden until file selected) -->
+        <div id="audioPlayerContainer" class="audio-player-container hidden">
+          <div class="file-info-header">
+            <div class="file-details">
+              <span class="file-icon">🎵</span>
+              <div>
+                <h4 id="fileName">recording.mp3</h4>
+                <p id="fileMeta">00:00:00 • 0.0 MB • 44.1kHz</p>
+              </div>
+            </div>
+            <button id="removeFileBtn" class="btn-text btn-danger">Change File</button>
+          </div>
+
+          <audio id="audioElement" controls class="custom-audio-player"></audio>
+
+          <!-- Processing Controls -->
+          <div class="transcribe-controls">
+            <div class="option-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="autoFormatToggle" checked />
+                <span>Auto-Format Paragraphs & Punctuation</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="timestampToggle" checked />
+                <span>Include Timestamps ([MM:SS])</span>
+              </label>
+            </div>
+            <button id="startTranscribeBtn" class="btn btn-accent btn-large">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Transcribing
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Progress Section -->
+      <section id="progressSection" class="card progress-card hidden">
+        <div class="progress-header">
+          <h3 id="progressTitle">Initializing AI Engine...</h3>
+          <span id="progressPercent" class="progress-badge">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-footer">
+          <p id="progressDetails">Preparing audio chunk decoding (16kHz mono PCM)...</p>
+          <p id="progressChunkInfo" class="chunk-info">Chunk 0 / 0</p>
+        </div>
+      </section>
+
+      <!-- Transcript Results Workspace -->
+      <section class="card result-card">
+        <div class="result-header">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="formatted">Formatted Text</button>
+            <button class="tab-btn" data-tab="timestamps">With Timestamps</button>
+            <button class="tab-btn" data-tab="raw">Raw Speech Output</button>
+          </div>
+
+          <div class="stats-bar">
+            <span class="stat-item">Words: <strong id="wordCountStat">0</strong></span>
+            <span class="stat-item">Chars: <strong id="charCountStat">0</strong></span>
+            <span class="stat-item">Reading Time: <strong id="readTimeStat">0 min</strong></span>
+          </div>
+        </div>
+
+        <div class="search-toolbar">
+          <div class="search-input-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" placeholder="Search transcript..." />
+          </div>
+          <button id="formatTextBtn" class="btn btn-secondary btn-sm" title="Re-apply Smart Formatting">
+            ✨ Clean & Format
+          </button>
+        </div>
+
+        <div class="editor-container">
+          <textarea id="transcriptEditor" placeholder="Your transcribed text will appear here once transcription starts. You can edit the text directly." spellcheck="true"></textarea>
+        </div>
+
+        <div class="export-bar">
+          <button id="copyBtn" class="btn btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Text
+          </button>
+          <div class="export-dropdown-wrapper">
+            <button id="downloadTxtBtn" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download TXT
+            </button>
+            <button id="downloadSrtBtn" class="btn btn-secondary">Download SRT</button>
+            <button id="downloadPdfBtn" class="btn btn-secondary">Download PDF</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Cloud API Settings Modal -->
+    <div id="apiModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Cloud API Settings</h3>
+          <button id="closeApiModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>You can optionally enter an OpenAI or Groq API key for instant server-side transcription of long audio files.</p>
+          <div class="form-group">
+            <label for="apiKeyProvider">Provider</label>
+            <select id="apiKeyProvider" class="custom-select">
+              <option value="groq">Groq Whisper API (Lightning Fast & Free Tier available)</option>
+              <option value="openai">OpenAI Whisper API</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="apiKeyValue">API Key</label>
+            <input type="password" id="apiKeyValue" class="custom-input" placeholder="gsk_... or sk-..." />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveApiKeyBtn" class="btn btn-primary">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
